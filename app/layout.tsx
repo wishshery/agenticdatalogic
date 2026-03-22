@@ -5,36 +5,36 @@ import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: {
-    default: "AssistAI — Your AI-Powered Virtual Assistant Team",
-    template: "%s | AssistAI",
+    default: "AgenticAI — Your AI-Powered Virtual Assistant Team",
+    template: "%s | AgenticAI",
   },
   description:
-    "AssistAI provides 24/7 AI-powered virtual assistants for entrepreneurs, freelancers, and small businesses. Handle admin, scheduling, email, research, social media, and more.",
+    "AgenticAI provides 24/7 AI-powered virtual assistants for entrepreneurs, freelancers, and small businesses. Handle admin, scheduling, email, research, social media, and more.",
   keywords: ["AI assistant", "virtual assistant", "SaaS", "productivity", "automation", "scheduling"],
-  authors: [{ name: "AssistAI Team" }],
-  creator: "AssistAI",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://assistai.app"),
+  authors: [{ name: "AgenticAI Team" }],
+  creator: "AgenticAI",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://www.agenticdatalogic.com"),
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "/",
-    title: "AssistAI — Your AI-Powered Virtual Assistant Team",
+    title: "AgenticAI — Your AI-Powered Virtual Assistant Team",
     description: "AI agents that handle your business tasks 24/7",
-    siteName: "AssistAI",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "AssistAI" }],
+    siteName: "AgenticAI",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "AgenticAI" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AssistAI",
+    title: "AgenticAI",
     description: "Your AI-Powered Virtual Assistant Team",
     images: ["/og-image.png"],
-    creator: "@assistai",
+    creator: "@agenticdatalogic",
   },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "AssistAI",
+    title: "AgenticAI",
   },
   icons: {
     icon: [
