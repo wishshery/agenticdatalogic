@@ -305,7 +305,6 @@ function ChatPageInner() {
                   flex: 1, background: "none", border: "none", outline: "none",
                   color: "white", fontSize: 14, lineHeight: 1.5, resize: "none",
                   fontFamily: "inherit", maxHeight: 120, overflowY: "auto",
-                  placeholderColor: "#52525B",
                 }}
               />
               <button
