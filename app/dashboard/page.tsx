@@ -1,178 +1,203 @@
 "use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  CheckSquare, MessageSquare, Calendar, FileText, Bot,
-  Clock, CheckCircle2, ArrowRight, Zap, Mail, Search,
-  BarChart3, Users, Globe, Sparkles,
-} from "lucide-react";
 
 const AGENTS = [
-  { id: "orchestrator", name: "AI Orchestrator", icon: Bot, color: "text-primary-400", bg: "bg-primary-500/10", border: "border-primary-800/50", desc: "Your general AI assistant — routes tasks to specialists", status: "active" },
-  { id: "admin", name: "Admin Assistant", icon: Users, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-800/50", desc: "Meetings, travel, CRM updates, follow-ups", status: "active" },
-  { id: "email", name: "Email Manager", icon: Mail, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-800/50", desc: "Inbox management, drafts, responses", status: "active" },
-  { id: "scheduler", name: "Scheduler", icon: Calendar, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-800/50", desc: "Calendar, meetings, reminders", status: "idle" },
-  { id: "research", name: "Research Agent", icon: Search, color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-800/50", desc: "Competitors, market research, industry analysis", status: "active" },
-  { id: "social", name: "Social Media", icon: Globe, color: "text-pink-400", bg: "bg-pink-500/10", border: "border-pink-800/50", desc: "Posts, captions, content calendars", status: "idle" },
-  { id: "support", name: "Customer Support", icon: MessageSquare, color: "text-violet-400", bg: "bg-violet-500/10", border: "border-violet-800/50", desc: "FAQs, responses, knowledge base", status: "idle" },
-  { id: "docs", name: "Document Creator", icon: FileText, color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-800/50", desc: "Reports, proposals, briefs", status: "idle" },
-  { id: "projects", name: "Project Manager", icon: BarChart3, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-800/50", desc: "Plans, milestones, status reports", status: "active" },
+  { id: "orchestrator", icon: "🧠", name: "AI Orchestrator",   desc: "Routes to specialists", color: "linear-gradient(135deg,#7C3AED,#6366F1)", sample: "What can you help me with today?" },
+  { id: "admin",        icon: "📋", name: "Admin Assistant",    desc: "Meetings & CRM",        color: "linear-gradient(135deg,#2563EB,#0EA5E9)", sample: "Draft a meeting agenda for Monday" },
+  { id: "email",        icon: "✉️", name: "Email Manager",      desc: "Drafts & replies",      color: "linear-gradient(135deg,#06B6D4,#0EA5E9)", sample: "Help me write a professional email" },
+  { id: "scheduler",    icon: "🗓️", name: "Scheduler",          desc: "Calendar & reminders",  color: "linear-gradient(135deg,#F97316,#F59E0B)", sample: "Schedule a team meeting for next week" },
+  { id: "research",     icon: "🔍", name: "Research Agent",     desc: "Market insights",       color: "linear-gradient(135deg,#10B981,#14B8A6)", sample: "Research our top 3 competitors" },
+  { id: "social",       icon: "📱", name: "Social Media",       desc: "Posts & captions",      color: "linear-gradient(135deg,#EC4899,#8B5CF6)", sample: "Write 5 LinkedIn posts for our launch" },
+  { id: "support",      icon: "💬", name: "Customer Support",   desc: "FAQs & tickets",        color: "linear-gradient(135deg,#F59E0B,#EF4444)", sample: "Draft a response to a customer issue" },
+  { id: "docs",         icon: "📄", name: "Document Creator",   desc: "Reports & proposals",   color: "linear-gradient(135deg,#F43F5E,#EC4899)", sample: "Write a business proposal template" },
+  { id: "projects",     icon: "🚀", name: "Project Manager",    desc: "Plans & milestones",    color: "linear-gradient(135deg,#6366F1,#4F46E5)", sample: "Create a 30-day project plan" },
 ];
 
-const statCards = [
-  { label: "Tasks Completed", value: "24", change: "+8 today", up: true, icon: CheckSquare, color: "bg-primary-500/10 text-primary-400" },
-  { label: "Active Agents", value: "4", change: "of 9 running", up: null, icon: Bot, color: "bg-emerald-500/10 text-emerald-400" },
-  { label: "Emails Handled", value: "87", change: "3 need review", up: null, icon: Mail, color: "bg-amber-500/10 text-amber-400" },
-  { label: "Hours Saved", value: "4.2", change: "+1.1h vs yesterday", up: true, icon: Clock, color: "bg-indigo-500/10 text-indigo-400" },
-];
-
-const recentTasks = [
-  { id: 1, title: "Draft Q2 investor update email", agent: "Email Manager", status: "completed", time: "2m ago", priority: "high" },
-  { id: 2, title: "Research competitor pricing strategies", agent: "Research Agent", status: "in_progress", time: "5m ago", priority: "medium" },
-  { id: 3, title: "Schedule weekly team standup", agent: "Scheduler", status: "completed", time: "10m ago", priority: "low" },
-  { id: 4, title: "Create project brief for new client", agent: "Document Creator", status: "pending", time: "1h ago", priority: "high" },
-  { id: 5, title: "Update CRM with meeting notes", agent: "Admin Assistant", status: "completed", time: "2h ago", priority: "medium" },
+const QUICK_ACTIONS = [
+  { label: "Draft an email", icon: "✉️", agent: "email",     q: "Help me draft a professional email" },
+  { label: "Plan my week",   icon: "🗓️", agent: "scheduler",  q: "Help me plan and organize my schedule for this week" },
+  { label: "Research topic", icon: "🔍", agent: "research",   q: "Research and give me key insights on a topic" },
+  { label: "Write a post",   icon: "📱", agent: "social",     q: "Write an engaging LinkedIn post for my business" },
+  { label: "Start a project",icon: "🚀", agent: "projects",   q: "Help me create a structured project plan" },
 ];
 
 export default function DashboardPage() {
-  const [greeting, setGreeting] = useState("Good morning");
-
-  useEffect(() => {
-    const h = new Date().getHours();
-    if (h >= 12 && h < 18) setGreeting("Good afternoon");
-    else if (h >= 18) setGreeting("Good evening");
-  }, []);
-
-  const priorityBadge = (priority: string) => {
-    const map: Record<string, string> = { high: "badge-red", medium: "badge-amber", low: "badge-blue" };
-    return <span className={`badge ${map[priority] || "badge-blue"}`}>{priority}</span>;
-  };
-
-  const taskStatusIcon = (status: string) => {
-    if (status === "completed") return <CheckCircle2 className="w-4 h-4 text-emerald-400" />;
-    if (status === "in_progress") return <Clock className="w-4 h-4 text-amber-400" />;
-    return <div className="w-4 h-4 rounded-full border-2 border-navy-600" />;
-  };
-
-  const statusDot = (status: string) => {
-    if (status === "active") return <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />;
-    return <span className="w-2 h-2 rounded-full bg-navy-600" />;
-  };
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <div className="space-y-6 max-w-7xl">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">{greeting}! 👋</h1>
-          <p className="text-navy-400 text-sm mt-1">Your AI team is ready. Click any agent to start chatting.</p>
-        </div>
-        <Link href="/dashboard/chat" className="btn btn-primary btn-sm hidden sm:flex">
-          <Zap className="w-4 h-4" />
-          Ask AI
-        </Link>
-      </div>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#09090B", color: "#F4F4F5", fontFamily: "Inter, system-ui, sans-serif" }}>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map(({ label, value, change, up, icon: Icon, color }) => (
-          <div key={label} className="stat-card">
-            <div className={`stat-icon ${color}`}><Icon className="w-5 h-5" /></div>
-            <div className="flex-1 min-w-0">
-              <p className="stat-value">{value}</p>
-              <p className="stat-label">{label}</p>
-              <p className={up === true ? "stat-change-up" : "text-xs text-navy-500 mt-1"}>
-                {up === true && "↑ "}{change}
-              </p>
+      {/* ─── Sidebar ─── */}
+      <aside style={{
+        width: 240, flexShrink: 0,
+        background: "#0D0D0F",
+        borderRight: "1px solid rgba(255,255,255,0.06)",
+        display: "flex", flexDirection: "column",
+        position: "fixed", top: 0, left: 0, bottom: 0, zIndex: 40,
+        overflowY: "auto",
+      }}>
+        {/* Logo */}
+        <div style={{ padding: "20px 16px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, background: "linear-gradient(135deg,#7C3AED,#4F46E5)", flexShrink: 0 }}>
+              🤖
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* AI Agents Grid */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-white flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary-400" />
-            Your AI Agents — Click to Chat
-          </h2>
+            <span style={{ fontWeight: 800, color: "white", fontSize: 15, letterSpacing: "-0.02em" }}>AgenticAI</span>
+          </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {AGENTS.map(({ id, name, icon: Icon, color, bg, border, desc, status }) => (
-            <Link
-              key={id}
-              href={`/dashboard/chat?agent=${id}`}
-              className={`flex items-center gap-3 p-4 rounded-xl border ${bg} ${border} hover:border-opacity-100 hover:scale-[1.02] transition-all duration-150 group`}
-            >
-              <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
-                <Icon className={`w-5 h-5 ${color}`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-white truncate">{name}</p>
-                  {statusDot(status)}
-                </div>
-                <p className="text-xs text-navy-500 truncate">{desc}</p>
-              </div>
-              <ArrowRight className="w-4 h-4 text-navy-600 group-hover:text-white group-hover:translate-x-1 transition-all flex-shrink-0" />
+
+        {/* Nav */}
+        <nav style={{ padding: "12px 8px", flex: 1 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#52525B", letterSpacing: "0.1em", padding: "4px 8px", marginBottom: 4 }}>NAVIGATION</div>
+          <Link href="/dashboard" style={{
+            display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8,
+            textDecoration: "none", fontSize: 13, fontWeight: 600, color: "white",
+            background: "rgba(124,58,237,0.18)", border: "1px solid rgba(124,58,237,0.3)",
+            marginBottom: 2,
+          }}>
+            <span>🏠</span> Dashboard
+          </Link>
+          <Link href="/dashboard/chat" style={{
+            display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8,
+            textDecoration: "none", fontSize: 13, fontWeight: 500, color: "#A1A1AA",
+            marginBottom: 2,
+          }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "white"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#A1A1AA"; }}>
+            <span>💬</span> Chat
+          </Link>
+
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#52525B", letterSpacing: "0.1em", padding: "12px 8px 4px" }}>AGENTS</div>
+          {AGENTS.map((a) => (
+            <Link key={a.id} href={`/dashboard/chat?agent=${a.id}&q=${encodeURIComponent(a.sample)}`} style={{
+              display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8,
+              textDecoration: "none", fontSize: 12, fontWeight: 500, color: "#71717A",
+              marginBottom: 1,
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "white"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#71717A"; }}>
+              <span style={{ fontSize: 14 }}>{a.icon}</span>
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.name}</span>
             </Link>
           ))}
-        </div>
-      </div>
+        </nav>
 
-      {/* Recent Tasks + Quick Actions */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Recent Tasks */}
-        <div className="lg:col-span-2 card p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-white">Recent Tasks</h2>
-            <span className="text-xs text-navy-500">Session activity</span>
+        {/* Bottom */}
+        <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{
+            padding: "10px 12px", borderRadius: 10,
+            background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.2)",
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", marginBottom: 4 }}>✨ Claude AI Powered</div>
+            <div style={{ fontSize: 11, color: "#71717A" }}>Free to use · No subscription</div>
           </div>
-          <div className="space-y-3">
-            {recentTasks.map((task) => (
-              <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg bg-navy-800/50 hover:bg-navy-800 transition-colors">
-                <div className="mt-0.5">{taskStatusIcon(task.status)}</div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-white font-medium truncate">{task.title}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-navy-500">{task.agent}</span>
-                    <span className="text-navy-700">·</span>
-                    <span className="text-xs text-navy-500">{task.time}</span>
+        </div>
+      </aside>
+
+      {/* ─── Main Content ─── */}
+      <main style={{ marginLeft: 240, flex: 1, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        {/* Top bar */}
+        <div style={{
+          position: "sticky", top: 0, zIndex: 30,
+          background: "rgba(9,9,11,0.90)", backdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          padding: "0 32px", height: 60,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: "white" }}>Dashboard</h1>
+          <Link href="/dashboard/chat" style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "7px 16px", borderRadius: 8, fontSize: 13, fontWeight: 700, color: "white",
+            background: "linear-gradient(135deg,#7C3AED,#4F46E5)", textDecoration: "none",
+          }}>
+            ✨ New Chat
+          </Link>
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: "32px", flex: 1 }}>
+          {/* Greeting */}
+          <div style={{ marginBottom: 32 }}>
+            <h2 style={{ fontSize: 28, fontWeight: 800, color: "white", letterSpacing: "-0.02em", marginBottom: 4 }}>
+              {greeting} 👋
+            </h2>
+            <p style={{ fontSize: 15, color: "#71717A" }}>Your AI team is online and ready. What would you like to delegate today?</p>
+          </div>
+
+          {/* Quick actions */}
+          <div style={{ marginBottom: 40 }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, color: "#71717A", letterSpacing: "0.06em", marginBottom: 12, textTransform: "uppercase" }}>Quick Actions</h3>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {QUICK_ACTIONS.map((q) => (
+                <Link key={q.label} href={`/dashboard/chat?agent=${q.agent}&q=${encodeURIComponent(q.q)}`} style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "8px 16px", borderRadius: 99, fontSize: 13, fontWeight: 600,
+                  background: "#18181B", border: "1px solid rgba(255,255,255,0.08)",
+                  color: "#D4D4D8", textDecoration: "none", transition: "all 0.15s",
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(124,58,237,0.5)"; e.currentTarget.style.color = "white"; e.currentTarget.style.background = "rgba(124,58,237,0.1)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#D4D4D8"; e.currentTarget.style.background = "#18181B"; }}>
+                  <span>{q.icon}</span> {q.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Agent Cards Grid */}
+          <div>
+            <h3 style={{ fontSize: 13, fontWeight: 700, color: "#71717A", letterSpacing: "0.06em", marginBottom: 16, textTransform: "uppercase" }}>All Agents</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12 }}>
+              {AGENTS.map((agent) => (
+                <Link
+                  key={agent.id}
+                  href={`/dashboard/chat?agent=${agent.id}&q=${encodeURIComponent(agent.sample)}`}
+                  style={{
+                    display: "flex", flexDirection: "column", gap: 12, padding: 18,
+                    background: "#18181B",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    borderRadius: 14, textDecoration: "none",
+                    transition: "all 0.2s",
+                    boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = "rgba(124,58,237,0.45)";
+                    e.currentTarget.style.boxShadow = "0 8px 30px rgba(0,0,0,0.35), 0 0 0 1px rgba(124,58,237,0.15)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+                    e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.25)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 10, display: "flex", alignItems: "center",
+                      justifyContent: "center", fontSize: 18, flexShrink: 0,
+                      background: agent.color,
+                    }}>
+                      {agent.icon}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 700, color: "white", fontSize: 14 }}>{agent.name}</div>
+                      <div style={{ fontSize: 12, color: "#71717A", marginTop: 1 }}>{agent.desc}</div>
+                    </div>
                   </div>
-                </div>
-                {priorityBadge(task.priority)}
-              </div>
-            ))}
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.05)",
+                  }}>
+                    <span style={{ fontSize: 12, color: "#52525B" }}>Click to chat</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#7C3AED" }}>→</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
-
-        {/* Quick Actions */}
-        <div className="card p-5">
-          <h2 className="font-semibold text-white mb-4">Quick Actions</h2>
-          <div className="space-y-2">
-            {[
-              { label: "Compose Email", href: "/dashboard/chat?agent=email&q=Write+a+professional+email", icon: Mail, color: "text-amber-400", bg: "bg-amber-500/10" },
-              { label: "Schedule Meeting", href: "/dashboard/chat?agent=scheduler&q=Help+me+schedule+a+meeting", icon: Calendar, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-              { label: "Research Topic", href: "/dashboard/chat?agent=research&q=Research+this+topic+for+me", icon: Search, color: "text-cyan-400", bg: "bg-cyan-500/10" },
-              { label: "Create Document", href: "/dashboard/chat?agent=docs&q=Create+a+professional+document", icon: FileText, color: "text-indigo-400", bg: "bg-indigo-500/10" },
-              { label: "Social Media Post", href: "/dashboard/chat?agent=social&q=Write+social+media+posts+for+me", icon: Globe, color: "text-pink-400", bg: "bg-pink-500/10" },
-            ].map(({ label, href, icon: Icon, color, bg }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex items-center gap-3 p-3 rounded-lg bg-navy-800/40 hover:bg-navy-800 border border-transparent hover:border-navy-700 transition-all group"
-              >
-                <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
-                  <Icon className={`w-4 h-4 ${color}`} />
-                </div>
-                <span className="text-sm text-navy-300 group-hover:text-white transition-colors flex-1">{label}</span>
-                <ArrowRight className="w-3.5 h-3.5 text-navy-600 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

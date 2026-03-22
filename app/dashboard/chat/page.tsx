@@ -2,80 +2,31 @@
 
 import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import {
-  Send, Bot, Sparkles, RotateCcw, Copy, ThumbsUp, ThumbsDown,
-  ChevronRight, Mail, Calendar, Search, BarChart3, FileText,
-  MessageSquare, Globe, Users, Zap,
-} from "lucide-react";
+import Link from "next/link";
 import { useAgentChat } from "@/lib/hooks/use-agent-chat";
 
 const AGENTS = [
-  { id: "orchestrator", label: "AI Orchestrator", icon: Bot, color: "text-primary-400", bgColor: "bg-primary-500/10", desc: "General-purpose AI, routes to specialists" },
-  { id: "admin", label: "Admin Assistant", icon: Users, color: "text-blue-400", bgColor: "bg-blue-500/10", desc: "Meetings, CRM, travel, follow-ups" },
-  { id: "email", label: "Email Manager", icon: Mail, color: "text-amber-400", bgColor: "bg-amber-500/10", desc: "Inbox, drafts, professional responses" },
-  { id: "scheduler", label: "Scheduler", icon: Calendar, color: "text-emerald-400", bgColor: "bg-emerald-500/10", desc: "Calendar, meetings, reminders" },
-  { id: "research", label: "Research Agent", icon: Search, color: "text-cyan-400", bgColor: "bg-cyan-500/10", desc: "Competitors, market, industry research" },
-  { id: "social", label: "Social Media", icon: Globe, color: "text-pink-400", bgColor: "bg-pink-500/10", desc: "Posts, captions, content calendars" },
-  { id: "support", label: "Customer Support", icon: MessageSquare, color: "text-violet-400", bgColor: "bg-violet-500/10", desc: "FAQ, responses, knowledge base" },
-  { id: "docs", label: "Document Creator", icon: FileText, color: "text-indigo-400", bgColor: "bg-indigo-500/10", desc: "Reports, proposals, briefs" },
-  { id: "projects", label: "Project Manager", icon: BarChart3, color: "text-purple-400", bgColor: "bg-purple-500/10", desc: "Plans, milestones, status reports" },
+  { id: "orchestrator", icon: "🧠", name: "AI Orchestrator",  color: "linear-gradient(135deg,#7C3AED,#6366F1)" },
+  { id: "admin",        icon: "📋", name: "Admin Assistant",   color: "linear-gradient(135deg,#2563EB,#0EA5E9)" },
+  { id: "email",        icon: "✉️", name: "Email Manager",     color: "linear-gradient(135deg,#06B6D4,#0EA5E9)" },
+  { id: "scheduler",    icon: "🗓️", name: "Scheduler",         color: "linear-gradient(135deg,#F97316,#F59E0B)" },
+  { id: "research",     icon: "🔍", name: "Research Agent",    color: "linear-gradient(135deg,#10B981,#14B8A6)" },
+  { id: "social",       icon: "📱", name: "Social Media",      color: "linear-gradient(135deg,#EC4899,#8B5CF6)" },
+  { id: "support",      icon: "💬", name: "Customer Support",  color: "linear-gradient(135deg,#F59E0B,#EF4444)" },
+  { id: "docs",         icon: "📄", name: "Document Creator",  color: "linear-gradient(135deg,#F43F5E,#EC4899)" },
+  { id: "projects",     icon: "🚀", name: "Project Manager",   color: "linear-gradient(135deg,#6366F1,#4F46E5)" },
 ];
 
 const QUICK_PROMPTS: Record<string, string[]> = {
-  orchestrator: [
-    "What can you help me with today?",
-    "Summarize my priorities for this week",
-    "Draft a professional email to a new client",
-    "Research my top 3 competitors",
-  ],
-  admin: [
-    "Create a meeting agenda for our Monday standup",
-    "Draft a travel itinerary for a 3-day conference",
-    "Write a follow-up email after a sales meeting",
-    "Create a weekly activity report template",
-  ],
-  email: [
-    "Write a cold outreach email to a potential partner",
-    "Draft a follow-up email after a demo call",
-    "Write a professional rejection email",
-    "Create a customer onboarding welcome email",
-  ],
-  scheduler: [
-    "Schedule a weekly team standup for Fridays at 9am",
-    "Create a project kickoff meeting agenda",
-    "Plan a 1-hour team brainstorming session",
-    "Suggest the best times for a client call",
-  ],
-  research: [
-    "Research the top 5 competitors in the SaaS CRM space",
-    "Summarize current trends in AI productivity tools",
-    "Create a competitor analysis for my industry",
-    "Research pricing strategies for B2B SaaS",
-  ],
-  social: [
-    "Write 5 LinkedIn posts about AI productivity",
-    "Create a week of Instagram captions for a tech brand",
-    "Write Twitter/X threads about building a startup",
-    "Create a social media content calendar for next month",
-  ],
-  support: [
-    "Write a response to an angry customer about a delayed order",
-    "Create an FAQ document for our SaaS product",
-    "Draft a refund policy response email",
-    "Write a knowledge base article about our onboarding",
-  ],
-  docs: [
-    "Create a business proposal template for software projects",
-    "Write a project brief for a new mobile app",
-    "Draft an executive summary for a quarterly report",
-    "Create a product requirements document template",
-  ],
-  projects: [
-    "Create a project plan for launching a new website",
-    "Write a sprint planning document for 2 weeks",
-    "Create a risk assessment for a software migration",
-    "Draft a project status report template",
-  ],
+  orchestrator: ["What tasks can you help with?", "Plan my upcoming product launch", "What should I prioritize today?", "Help me organize my workload"],
+  admin:        ["Draft a meeting agenda", "Write a travel itinerary", "Create a follow-up email template", "Update CRM notes"],
+  email:        ["Write a cold outreach email", "Reply to a customer complaint", "Draft a follow-up email", "Summarize my inbox"],
+  scheduler:    ["Schedule a team standup", "Find the best meeting time", "Set reminders for this week", "Plan my calendar for Monday"],
+  research:     ["Analyze our competitors", "Research market trends in AI", "Summarize industry news", "Competitor SWOT analysis"],
+  social:       ["Write 5 LinkedIn posts", "Create a content calendar", "Caption ideas for Instagram", "Twitter thread on our product"],
+  support:      ["Draft a response to a complaint", "Write an FAQ article", "Handle a refund request", "Write a support ticket response"],
+  docs:         ["Write a business proposal", "Create a project brief", "Draft an executive summary", "Write a meeting summary"],
+  projects:     ["Create a 30-day plan", "Build a sprint board", "Write a status report", "Risk assessment template"],
 };
 
 function ChatPageInner() {
@@ -85,19 +36,17 @@ function ChatPageInner() {
   const initialQuery = searchParams.get("q") || "";
 
   const [selectedAgent, setSelectedAgent] = useState(initialAgent);
-  const [input, setInput] = useState("");
-  const [showSidebar, setShowSidebar] = useState(true);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [inputValue, setInputValue] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const didSendInitial = useRef(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { messages, sendMessage, isLoading, clearHistory } = useAgentChat(selectedAgent);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  const currentAgent = AGENTS.find((a) => a.id === selectedAgent) || AGENTS[0];
+  const quickPrompts = QUICK_PROMPTS[selectedAgent] || QUICK_PROMPTS.orchestrator;
 
-  // Auto-send initial query from URL once
-  const didSendInitial = useRef(false);
   useEffect(() => {
     if (initialQuery && !didSendInitial.current && messages.length === 0) {
       didSendInitial.current = true;
@@ -105,124 +54,165 @@ function ChatPageInner() {
     }
   }, [initialQuery, messages.length, sendMessage]);
 
-  const handleSend = useCallback(async () => {
-    const text = input.trim();
-    if (!text || isLoading) return;
-    setInput("");
-    await sendMessage(text);
-  }, [input, isLoading, sendMessage]);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleSend = useCallback(async () => {
+    const text = inputValue.trim();
+    if (!text || isLoading) return;
+    setInputValue("");
+    await sendMessage(text);
+  }, [inputValue, isLoading, sendMessage]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
 
-  const handleAgentSwitch = (agentId: string) => {
+  const switchAgent = (agentId: string) => {
     setSelectedAgent(agentId);
     clearHistory();
-    router.replace(`/dashboard/chat?agent=${agentId}`);
+    didSendInitial.current = false;
+    router.push(`/dashboard/chat?agent=${agentId}`);
   };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
-  const activeAgent = AGENTS.find((a) => a.id === selectedAgent) || AGENTS[0];
-  const quickPrompts = QUICK_PROMPTS[selectedAgent] || QUICK_PROMPTS.orchestrator;
 
   return (
-    <div className="flex h-full gap-0 -m-6">
-      {/* ── AGENT SIDEBAR ── */}
-      <div
-        className={`${
-          showSidebar ? "w-64" : "w-0"
-        } transition-all duration-200 overflow-hidden flex-shrink-0 border-r border-navy-800 flex flex-col bg-navy-950`}
-      >
-        <div className="p-4 border-b border-navy-800">
-          <p className="text-xs font-semibold uppercase tracking-widest text-navy-500 mb-1">Select Agent</p>
-          <p className="text-xs text-navy-600">Each agent is a specialist</p>
-        </div>
-        <div className="flex-1 overflow-y-auto py-2">
-          {AGENTS.map((agent) => {
-            const Icon = agent.icon;
-            const isActive = selectedAgent === agent.id;
-            return (
-              <button
-                key={agent.id}
-                onClick={() => handleAgentSwitch(agent.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all duration-150 ${
-                  isActive
-                    ? "bg-primary-900/40 border-r-2 border-primary-500"
-                    : "hover:bg-navy-800/50"
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-lg ${agent.bgColor} flex items-center justify-center flex-shrink-0`}>
-                  <Icon className={`w-4 h-4 ${agent.color}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium truncate ${isActive ? "text-white" : "text-navy-300"}`}>
-                    {agent.label}
-                  </p>
-                  <p className="text-xs text-navy-600 truncate">{agent.desc}</p>
-                </div>
-                {isActive && <ChevronRight className="w-3.5 h-3.5 text-primary-400 flex-shrink-0" />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+    <div style={{ display: "flex", height: "100vh", background: "#09090B", color: "#F4F4F5", fontFamily: "Inter, system-ui, sans-serif", overflow: "hidden" }}>
 
-      {/* ── CHAT AREA ── */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Chat header */}
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-navy-800 bg-navy-950">
-          <button
-            onClick={() => setShowSidebar(!showSidebar)}
-            className="w-8 h-8 rounded-lg bg-navy-800 hover:bg-navy-700 flex items-center justify-center transition-colors"
-          >
-            <ChevronRight className={`w-4 h-4 text-navy-400 transition-transform ${showSidebar ? "rotate-180" : ""}`} />
-          </button>
-          <div className={`w-9 h-9 rounded-xl ${activeAgent.bgColor} flex items-center justify-center flex-shrink-0`}>
-            <activeAgent.icon className={`w-5 h-5 ${activeAgent.color}`} />
+      {/* ─── Left Sidebar ─── */}
+      {sidebarOpen && (
+        <aside style={{
+          width: 240, flexShrink: 0,
+          background: "#0D0D0F",
+          borderRight: "1px solid rgba(255,255,255,0.06)",
+          display: "flex", flexDirection: "column",
+          overflowY: "auto",
+        }}>
+          {/* Header */}
+          <div style={{ padding: "16px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", marginBottom: 12 }}>
+              <div style={{ width: 30, height: 30, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, background: "linear-gradient(135deg,#7C3AED,#4F46E5)", flexShrink: 0 }}>
+                🤖
+              </div>
+              <span style={{ fontWeight: 800, color: "white", fontSize: 14 }}>AgenticAI</span>
+            </Link>
+            <Link href="/dashboard" style={{
+              display: "flex", alignItems: "center", gap: 6, padding: "7px 10px", borderRadius: 8,
+              textDecoration: "none", fontSize: 12, fontWeight: 500, color: "#71717A",
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "white"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#71717A"; }}>
+              ← Dashboard
+            </Link>
           </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="font-bold text-white text-sm">{activeAgent.label}</h1>
-            <div className="flex items-center gap-1.5 text-xs text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Online · Ready to help
+
+          {/* Agents List */}
+          <div style={{ padding: "10px 8px", flex: 1 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#52525B", letterSpacing: "0.1em", padding: "4px 8px", marginBottom: 6 }}>SELECT AGENT</div>
+            {AGENTS.map((agent) => {
+              const isActive = selectedAgent === agent.id;
+              return (
+                <button
+                  key={agent.id}
+                  onClick={() => switchAgent(agent.id)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 9,
+                    fontSize: 13, fontWeight: isActive ? 700 : 500,
+                    color: isActive ? "white" : "#A1A1AA",
+                    background: isActive ? "rgba(124,58,237,0.18)" : "transparent",
+                    border: isActive ? "1px solid rgba(124,58,237,0.3)" : "1px solid transparent",
+                    width: "100%", textAlign: "left", cursor: "pointer", marginBottom: 2,
+                    transition: "all 0.15s",
+                  }}
+                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "white"; } }}
+                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#A1A1AA"; } }}
+                >
+                  <div style={{ width: 28, height: 28, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, background: agent.color, flexShrink: 0 }}>
+                    {agent.icon}
+                  </div>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{agent.name}</span>
+                  {isActive && (
+                    <span style={{ marginLeft: "auto", width: 6, height: 6, borderRadius: "50%", background: "#10B981", flexShrink: 0 }} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </aside>
+      )}
+
+      {/* ─── Main Chat Area ─── */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+
+        {/* Chat Header */}
+        <div style={{
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          padding: "0 20px", height: 58,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          background: "rgba(9,9,11,0.9)", backdropFilter: "blur(16px)",
+          flexShrink: 0,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              style={{ background: "none", border: "none", color: "#71717A", cursor: "pointer", padding: 4, borderRadius: 6, display: "flex", alignItems: "center" }}>
+              ☰
+            </button>
+            <div style={{ width: 36, height: 36, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, background: currentAgent.color }}>
+              {currentAgent.icon}
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, color: "white", fontSize: 15 }}>{currentAgent.name}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#71717A" }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981", display: "inline-block" }} />
+                Online · Ready to help
+              </div>
             </div>
           </div>
           <button
-            onClick={clearHistory}
-            className="btn btn-ghost btn-sm text-navy-500 hover:text-white gap-1.5"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Clear
+            onClick={() => { clearHistory(); didSendInitial.current = false; }}
+            style={{
+              display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 8,
+              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+              color: "#71717A", fontSize: 12, fontWeight: 600, cursor: "pointer",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = "white"; e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "#71717A"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}>
+            ↺ Clear
           </button>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full text-center py-8">
-              <div className={`w-16 h-16 rounded-2xl ${activeAgent.bgColor} border border-navy-700 flex items-center justify-center mb-4`}>
-                <activeAgent.icon className={`w-8 h-8 ${activeAgent.color}`} />
+        <div style={{ flex: 1, overflowY: "auto", padding: "24px 20px" }}>
+          {messages.length === 0 && !isLoading && (
+            <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center", paddingTop: 48 }}>
+              {/* Agent welcome */}
+              <div style={{ width: 64, height: 64, borderRadius: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, background: currentAgent.color, margin: "0 auto 20px" }}>
+                {currentAgent.icon}
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">{activeAgent.label}</h2>
-              <p className="text-navy-400 text-sm max-w-md mb-8">{activeAgent.desc}</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-xl">
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: "white", marginBottom: 8 }}>
+                Chat with {currentAgent.name}
+              </h2>
+              <p style={{ fontSize: 14, color: "#71717A", marginBottom: 28, lineHeight: 1.6 }}>
+                Your AI specialist is ready. Type a message below or pick a quick prompt to get started.
+              </p>
+              {/* Quick prompts */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                 {quickPrompts.map((prompt) => (
                   <button
                     key={prompt}
-                    onClick={() => {
-                      setInput(prompt);
-                      inputRef.current?.focus();
+                    onClick={() => sendMessage(prompt)}
+                    style={{
+                      padding: "12px 14px", borderRadius: 10, textAlign: "left",
+                      background: "#18181B", border: "1px solid rgba(255,255,255,0.07)",
+                      color: "#D4D4D8", fontSize: 13, fontWeight: 500, cursor: "pointer",
+                      lineHeight: 1.4, transition: "all 0.15s",
                     }}
-                    className="text-left p-3 rounded-xl bg-navy-800 border border-navy-700 hover:border-primary-700 hover:bg-navy-800/80 transition-all text-sm text-navy-300 hover:text-white"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-primary-400 inline mr-2 mb-0.5" />
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(124,58,237,0.4)"; e.currentTarget.style.color = "white"; e.currentTarget.style.background = "rgba(124,58,237,0.08)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; e.currentTarget.style.color = "#D4D4D8"; e.currentTarget.style.background = "#18181B"; }}>
                     {prompt}
                   </button>
                 ))}
@@ -231,86 +221,109 @@ function ChatPageInner() {
           )}
 
           {messages.map((msg) => (
-            <div key={msg.id} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
-              {msg.role === "assistant" ? (
-                <div className={`w-8 h-8 rounded-full ${activeAgent.bgColor} flex items-center justify-center flex-shrink-0 mt-1`}>
-                  <activeAgent.icon className={`w-4 h-4 ${activeAgent.color}`} />
-                </div>
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-navy-700 flex items-center justify-center flex-shrink-0 mt-1 text-xs font-bold text-white">
-                  You
+            <div key={msg.id} style={{
+              display: "flex", flexDirection: "column",
+              alignItems: msg.role === "user" ? "flex-end" : "flex-start",
+              marginBottom: 16, maxWidth: 800, margin: "0 auto 16px",
+            }}>
+              {msg.role === "assistant" && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, background: currentAgent.color }}>
+                    {currentAgent.icon}
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#71717A" }}>{currentAgent.name}</span>
+                  <span style={{ fontSize: 11, color: "#3F3F46" }}>{msg.timestamp}</span>
                 </div>
               )}
-              <div className={`flex flex-col gap-1 max-w-[80%] ${msg.role === "user" ? "items-end" : "items-start"}`}>
-                {msg.agent && (
-                  <span className="text-[11px] text-navy-600 px-1">via {msg.agent}</span>
-                )}
-                <div className={msg.role === "user" ? "chat-bubble-user" : "chat-bubble-ai"}>
-                  <p className="whitespace-pre-wrap leading-relaxed text-sm">{msg.content}</p>
-                </div>
-                {msg.role === "assistant" && (
-                  <div className="flex items-center gap-1 px-1">
-                    <span className="text-[11px] text-navy-600">{msg.timestamp}</span>
-                    <button
-                      onClick={() => copyToClipboard(msg.content)}
-                      className="p-1 rounded text-navy-600 hover:text-navy-400 transition-colors"
-                    >
-                      <Copy className="w-3 h-3" />
-                    </button>
-                    <button className="p-1 rounded text-navy-600 hover:text-emerald-400 transition-colors">
-                      <ThumbsUp className="w-3 h-3" />
-                    </button>
-                    <button className="p-1 rounded text-navy-600 hover:text-red-400 transition-colors">
-                      <ThumbsDown className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
+              <div style={{
+                maxWidth: "80%",
+                padding: "12px 16px",
+                borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                fontSize: 14, lineHeight: 1.6,
+                background: msg.role === "user"
+                  ? "linear-gradient(135deg,#7C3AED,#4F46E5)"
+                  : "#1C1C1F",
+                color: "white",
+                border: msg.role === "assistant" ? "1px solid rgba(255,255,255,0.07)" : "none",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}>
+                {msg.content}
               </div>
+              {msg.role === "user" && (
+                <span style={{ fontSize: 11, color: "#3F3F46", marginTop: 4 }}>{msg.timestamp}</span>
+              )}
             </div>
           ))}
 
           {isLoading && (
-            <div className="flex gap-3">
-              <div className={`w-8 h-8 rounded-full ${activeAgent.bgColor} flex items-center justify-center flex-shrink-0`}>
-                <activeAgent.icon className={`w-4 h-4 ${activeAgent.color}`} />
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 16, maxWidth: 800, margin: "0 auto 16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                <div style={{ width: 22, height: 22, borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, background: currentAgent.color }}>
+                  {currentAgent.icon}
+                </div>
               </div>
-              <div className="chat-bubble-ai flex items-center gap-1 py-3">
+              <div style={{
+                padding: "12px 18px", borderRadius: "16px 16px 16px 4px",
+                background: "#1C1C1F", border: "1px solid rgba(255,255,255,0.07)",
+                display: "flex", alignItems: "center", gap: 4,
+              }}>
                 <span className="typing-dot" />
                 <span className="typing-dot" />
                 <span className="typing-dot" />
               </div>
             </div>
           )}
-          <div ref={bottomRef} />
+          <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="px-6 pb-6 pt-4 border-t border-navy-800">
-          <div className="flex gap-3 bg-navy-800 border border-navy-700 rounded-xl p-3 focus-within:border-primary-600 transition-colors">
-            <div className="flex items-start pt-1">
-              <Zap className="w-4 h-4 text-navy-500" />
+        {/* Input Bar */}
+        <div style={{
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          padding: "16px 20px 20px",
+          background: "#09090B",
+          flexShrink: 0,
+        }}>
+          <div style={{ maxWidth: 800, margin: "0 auto" }}>
+            <div style={{
+              display: "flex", alignItems: "flex-end", gap: 10,
+              background: "#18181B",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 14, padding: "10px 12px",
+              transition: "border-color 0.2s",
+            }}
+              onFocusCapture={e => { e.currentTarget.style.borderColor = "rgba(124,58,237,0.5)"; }}
+              onBlurCapture={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}>
+              <textarea
+                ref={textareaRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={`Message ${currentAgent.name}… (Enter to send, Shift+Enter for new line)`}
+                rows={1}
+                style={{
+                  flex: 1, background: "none", border: "none", outline: "none",
+                  color: "white", fontSize: 14, lineHeight: 1.5, resize: "none",
+                  fontFamily: "inherit", maxHeight: 120, overflowY: "auto",
+                  placeholderColor: "#52525B",
+                }}
+              />
+              <button
+                onClick={handleSend}
+                disabled={!inputValue.trim() || isLoading}
+                style={{
+                  width: 36, height: 36, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center",
+                  background: inputValue.trim() && !isLoading ? "linear-gradient(135deg,#7C3AED,#4F46E5)" : "#27272A",
+                  border: "none", cursor: inputValue.trim() && !isLoading ? "pointer" : "not-allowed",
+                  color: "white", fontSize: 16, flexShrink: 0, transition: "all 0.15s",
+                }}>
+                {isLoading ? "⏳" : "↑"}
+              </button>
             </div>
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={`Ask ${activeAgent.label} anything…`}
-              className="flex-1 bg-transparent outline-none resize-none text-sm text-navy-100 placeholder:text-navy-600 min-h-[44px] max-h-[160px] leading-relaxed"
-              rows={1}
-              disabled={isLoading}
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              className="btn btn-primary btn-sm self-end disabled:opacity-50"
-            >
-              <Send className="w-4 h-4" />
-            </button>
+            <p style={{ fontSize: 11, color: "#3F3F46", textAlign: "center", marginTop: 8 }}>
+              Powered by Claude AI · Results may vary
+            </p>
           </div>
-          <p className="text-[11px] text-navy-700 text-center mt-2">
-            Powered by Claude AI · Responses may vary · Verify important information
-          </p>
         </div>
       </div>
     </div>
@@ -319,7 +332,16 @@ function ChatPageInner() {
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-full text-navy-400">Loading…</div>}>
+    <Suspense fallback={
+      <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#09090B" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: "linear-gradient(135deg,#7C3AED,#4F46E5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, margin: "0 auto 12px" }}>
+            🤖
+          </div>
+          <div style={{ color: "#71717A", fontSize: 14 }}>Loading chat…</div>
+        </div>
+      </div>
+    }>
       <ChatPageInner />
     </Suspense>
   );
